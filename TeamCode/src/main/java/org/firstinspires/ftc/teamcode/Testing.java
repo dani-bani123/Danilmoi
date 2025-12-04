@@ -28,7 +28,6 @@ public class Testing extends LinearOpMode
             bigbang.setPower(gamepad1.left_stick_y);
             triplelux.setPower(gamepad1.left_stick_y);
             bigd.setPower(gamepad1.left_stick_y);
-
         }
     }
 }
