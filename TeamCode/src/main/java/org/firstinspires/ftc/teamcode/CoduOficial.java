@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.telephony.CellSignalStrength;
+
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -8,21 +10,21 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.internal.camera.delegating.DelegatingCaptureSequence;
+
 @TeleOp(name="Doamne ajuta sa mearga", group="Iterative OpMode")
 public class CoduOficial extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
     public DcMotor motorFs, motorFd, motorSs, motorSd;
     public DcMotor[] wheelMotors = new DcMotor[4];
-   // private DcMotor brat = null;
     private DcMotor intakeMotor;
-    //private DcMotor motorFs1;
-    private DcMotor shooterStanga;
-    private DcMotor shooterDreapta;
+    private DcMotor shooterStanga, shooterDreapta;
     private Servo intakeServo;
+    private DcMotor cureaMT;
+    private Servo bila;
 
     double leftPower;
     double rightPower;
-    double drive, turn;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -30,11 +32,12 @@ public class CoduOficial extends LinearOpMode {
         motorSs = hardwareMap.get(DcMotor.class, "motor Ss");
         motorSd = hardwareMap.get(DcMotor.class, "motor Sd");
         motorFd = hardwareMap.get(DcMotor.class, "motor Fd");
-        //brat = hardwareMap.get(DcMotor.class, "motor brat");
         intakeMotor = hardwareMap.get(DcMotor.class, "motor intake");
         shooterStanga = hardwareMap.get(DcMotor.class, "shooter stanga");
         shooterDreapta = hardwareMap.get(DcMotor.class, "shooter dreapta");
         intakeServo = hardwareMap.get(Servo.class, "servo intake");
+        cureaMT = hardwareMap.get(DcMotor.class,"curea mt");
+        bila = hardwareMap.get(Servo.class,"bila");
 
 
         motorFs.setDirection(DcMotor.Direction.REVERSE);
@@ -75,6 +78,10 @@ public class CoduOficial extends LinearOpMode {
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
             intake();
+            wheelMovement();
+            frana();
+            cureatake();
+            Launch();
         }
     }
 
@@ -100,8 +107,11 @@ public class CoduOficial extends LinearOpMode {
         for (DcMotor motor : wheelMotors)
             motor.setPower(0);
     }
-    public void setIntakeServoPosition(float pos) {
-        intakeServo.setPosition(pos);
+   // public void setIntakeServoPosition(float pos) {
+   //     intakeServo.setPosition(pos);
+   // }
+    public void cureatake(){
+        cureaMT.setPower(-1);
     }
 
     //----------------INTAKEEEEE------------
@@ -125,15 +135,19 @@ public class CoduOficial extends LinearOpMode {
         //      else
         //         intakeMotor.setPower(0);
    // }
+        if (gamepad2.xWasPressed()) {
+            intakeMotor.setPower(-1);
+            intakeServo.setPosition(-1);
+        }
 
-        if (gamepad2.x) {
-            intakeMotor.setPower(-1.0);
-            setIntakeServoPosition(intakeservo_run);
-        }
-        if (gamepad2.dpad_up) {
+        if(gamepad2.xWasReleased()) {
             intakeMotor.setPower(0);
-            setIntakeServoPosition(intakeservo_stop);
+            intakeServo.setPosition(-1);
         }
+
+         if (gamepad2.aWasPressed()){
+            bila.setPosition(-1-);
+         }
     }
     //---------------------Launch-------------------------------
     private void Launch()
@@ -147,7 +161,7 @@ public class CoduOficial extends LinearOpMode {
         prevButon = y_press;
 
         if (shooterToggle) {
-            shooterStanga.setPower(shooterPower);
+            shooterStanga.setPower(-shooterPower);
             shooterDreapta.setPower(shooterPower);
         } else {
             shooterStanga.setPower(0);
@@ -155,9 +169,9 @@ public class CoduOficial extends LinearOpMode {
 
         }
         if (gamepad2.dpad_up) //creste puterea
-            shooterPower += 0.05;
+            shooterPower += 0.15;
         if (gamepad2.dpad_down) //scade puterea
-            shooterPower -= 0.05;
+            shooterPower -= 0.15;
 
         shooterPower = Math.max(0,Math.min(0.35  , shooterPower));//creste puterea de la 0 la puterea pusa
 
@@ -165,8 +179,8 @@ public class CoduOficial extends LinearOpMode {
             shooterPower = 0.5;
 
     }
-    public static float intakeservo_stop = 0;
-    public static float intakeservo_run = -1;
+  // public static float intakeservo_stop = 0f;
+  // public static int intakeservo_run = -1;
 }
 
 
