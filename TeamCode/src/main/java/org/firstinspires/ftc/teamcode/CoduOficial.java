@@ -1,67 +1,23 @@
 package org.firstinspires.ftc.teamcode;
 
-import android.telephony.CellSignalStrength;
-
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.robotcore.internal.camera.delegating.DelegatingCaptureSequence;
-
 @TeleOp(name="Doamne ajuta sa mearga", group="Iterative OpMode")
-public class CoduOficial extends LinearOpMode {
+public class CoduOficial extends RobotHardware {
     private ElapsedTime runtime = new ElapsedTime();
-    public DcMotor motorFs, motorFd, motorSs, motorSd;
-    public DcMotor[] wheelMotors = new DcMotor[4];
-    private DcMotor intakeMotor;
-    private DcMotor shooterStanga, shooterDreapta;
-    private Servo intakeServo;
-    private DcMotor cureaMT;
-    private Servo bila;
 
     double leftPower;
     double rightPower;
+    boolean shooterToggle = false;
+    boolean prevButon = false;
+    double shooterPower = 0;
+    boolean y_press = false;
 
     @Override
     public void runOpMode() throws InterruptedException {
-        motorFs = hardwareMap.get(DcMotor.class, "motor Fs");
-        motorSs = hardwareMap.get(DcMotor.class, "motor Ss");
-        motorSd = hardwareMap.get(DcMotor.class, "motor Sd");
-        motorFd = hardwareMap.get(DcMotor.class, "motor Fd");
-        intakeMotor = hardwareMap.get(DcMotor.class, "motor intake");
-        shooterStanga = hardwareMap.get(DcMotor.class, "shooter stanga");
-        shooterDreapta = hardwareMap.get(DcMotor.class, "shooter dreapta");
-        intakeServo = hardwareMap.get(Servo.class, "servo intake");
-        cureaMT = hardwareMap.get(DcMotor.class,"curea mt");
-        bila = hardwareMap.get(Servo.class,"bila");
-
-
-        motorFs.setDirection(DcMotor.Direction.REVERSE);
-        motorFd.setDirection(DcMotor.Direction.REVERSE);
-        motorSs.setDirection(DcMotor.Direction.FORWARD);
-        motorSd.setDirection(DcMotor.Direction.REVERSE);
-        /// --------------launch----------------------------
-        shooterStanga.setDirection(DcMotorSimple.Direction.FORWARD);
-        shooterDreapta.setDirection(DcMotorSimple.Direction.REVERSE);
-        shooterStanga.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        shooterDreapta.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-
-        wheelMotors = new DcMotor[]{motorFs, motorFd, motorSs, motorSd};
-
-        frana();
-
-        for (DcMotor motor : wheelMotors)
-            motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
-        for (DcMotor motor : wheelMotors)
-            motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-        telemetry.addData("Status", "Initialized");
-        telemetry.update();
+        init_hardware(hardwareMap);
 
         waitForStart();
 
@@ -77,6 +33,7 @@ public class CoduOficial extends LinearOpMode {
             motorFd.setPower(rightPower);
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
+
             intake();
             wheelMovement();
             frana();
@@ -103,10 +60,6 @@ public class CoduOficial extends LinearOpMode {
         motorSd.setPower(sd);
     }
 
-    public void frana() {
-        for (DcMotor motor : wheelMotors)
-            motor.setPower(0);
-    }
    // public void setIntakeServoPosition(float pos) {
    //     intakeServo.setPosition(pos);
    // }
@@ -137,47 +90,40 @@ public class CoduOficial extends LinearOpMode {
    // }
         if (gamepad2.xWasPressed()) {
             intakeMotor.setPower(-1);
-            intakeServo.setPosition(-1);
+            intakeServo.setPosition(0);
         }
 
         if(gamepad2.xWasReleased()) {
             intakeMotor.setPower(0);
-            intakeServo.setPosition(-1);
+            intakeServo.setPosition(0.5);//0 - reverse, 0.5 - stop, 1 - fata
         }
 
-         if (gamepad2.aWasPressed()){
-            bila.setPosition(-1-);
+         if (gamepad2.a){
+            bila.setPosition(0);
+         }
+         else {
+             bila.setPosition(0.5);
          }
     }
     //---------------------Launch-------------------------------
     private void Launch()
     {
-        boolean shooterToggle = false;
-        boolean prevButon = false;
-        double shooterPower = 1;
-        boolean y_press = gamepad2.y;
-        if (y_press && !prevButon)
-            shooterToggle = !shooterToggle;
-        prevButon = y_press;
-
-        if (shooterToggle) {
-            shooterStanga.setPower(-shooterPower);
-            shooterDreapta.setPower(shooterPower);
+        if (gamepad2.dpad_up) //creste puterea
+            shooterPower = 1;
+        if (gamepad2.dpad_down) //scade puterea
+            shooterPower = -1;
+        if (gamepad2.dpad_left)
+            shooterPower = 0.5;
+        if (gamepad2.dpad_right)
+            shooterPower = 0.25;
+//        shooterPower = Math.max(0,Math.min(0.35  , shooterPower));//creste puterea de la 0 la puterea pusa
+        if (gamepad2.y) {
+            shooterStanga.setPower(-1);
+            shooterDreapta.setPower(1);
         } else {
             shooterStanga.setPower(0);
             shooterDreapta.setPower(0);
-
         }
-        if (gamepad2.dpad_up) //creste puterea
-            shooterPower += 0.15;
-        if (gamepad2.dpad_down) //scade puterea
-            shooterPower -= 0.15;
-
-        shooterPower = Math.max(0,Math.min(0.35  , shooterPower));//creste puterea de la 0 la puterea pusa
-
-        if (gamepad2.dpad_left)
-            shooterPower = 0.5;
-
     }
   // public static float intakeservo_stop = 0f;
   // public static int intakeservo_run = -1;
