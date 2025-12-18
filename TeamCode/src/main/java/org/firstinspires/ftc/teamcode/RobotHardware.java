@@ -6,10 +6,13 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.teamcode.Utils.Utils;
+
 
 public class RobotHardware extends LinearOpMode {
     public DcMotor motorFs, motorFd, motorSs, motorSd;
     public DcMotor[] wheelMotors = new DcMotor[4];
+    public DcMotor[] shooterMotors = new DcMotor[2];
     public DcMotor intakeMotor;
     public DcMotor shooterStanga, shooterDreapta;
     public Servo intakeServo;
@@ -56,12 +59,20 @@ public class RobotHardware extends LinearOpMode {
         shooterDreapta.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
         wheelMotors = new DcMotor[]{motorFs, motorFd, motorSs, motorSd};
+        shooterMotors = new DcMotor[]{shooterDreapta , shooterStanga};
 
         for (DcMotor motor : wheelMotors)
             motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         for (DcMotor motor : wheelMotors)
             motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        for (DcMotor motor : shooterMotors)
+            motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        for (DcMotor motor : shooterMotors)
+            motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
     }
 
     public void frana() {
@@ -123,7 +134,7 @@ public class RobotHardware extends LinearOpMode {
         }
 
         if (toggleY) {
-            shooterStanga.setPower(-1);
+            shooterStanga.setPower(1);
             shooterDreapta.setPower(1);
         } else {
             shooterStanga.setPower(0);
@@ -141,7 +152,7 @@ public class RobotHardware extends LinearOpMode {
         }
 
         if (toggleB) {
-            lantMT.setPower(-1);
+            lantMT.setPower(1);
         } else {
             lantMT.setPower(0);
         }
