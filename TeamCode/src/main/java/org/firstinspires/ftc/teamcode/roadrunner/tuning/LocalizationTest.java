@@ -18,7 +18,7 @@ public class LocalizationTest extends LinearOpMode {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
         if (TuningOpModes.DRIVE_CLASS.equals(MecanumDrive.class)) {
-            MecanumDrive drive = new MecanumDrive(hardwareMap, Utils.Auto.POSE_STANGA);
+            MecanumDrive drive = new MecanumDrive(hardwareMap, Utils.AUTO.POSE_JOS);
 
             waitForStart();
 

@@ -66,7 +66,7 @@ public final class MecanumDrive {
 
         // drive model parameters
         public double inPerTick = 1;
-        public double lateralInPerTick = inPerTick;
+        public double lateralInPerTick = 0;
         public double trackWidthTicks = 0;
 
         // feedforward parameters (in tick units)
@@ -92,6 +92,15 @@ public final class MecanumDrive {
         public double lateralVelGain = 0.0;
         public double headingVelGain = 0.0; // shared with turn
     }
+    public enum Accuracy {
+        FASTEST,
+        JUST_ANGLE,
+        ACCURATE,
+        VERY_ACCURATE
+    }
+
+    public Accuracy accuracy = Accuracy.FASTEST;
+
     public static Params PARAMS = new Params();
 
     public final MecanumKinematics kinematics = new MecanumKinematics(
@@ -109,10 +118,6 @@ public final class MecanumDrive {
 
     public final DcMotorEx leftFront, leftBack, rightBack, rightFront;
     public final Servo odoWheelX, odoWheelY;
-    public DcMotor shooterStanga, shooterDreapta;
-    public DcMotor intakeMotor;
-    public DcMotor lantMT;
-
 
     public final VoltageSensor voltageSensor;
 
@@ -143,16 +148,6 @@ public final class MecanumDrive {
             rightFront = new OverflowEncoder(new RawEncoder(MecanumDrive.this.rightFront));
 
             imu = lazyImu.get();
-        }
-
-        @Override
-        public void setPose(Pose2d pose) {
-
-        }
-
-        @Override
-        public Pose2d getPose() {
-            return null;
         }
 
         @Override
@@ -241,41 +236,31 @@ public final class MecanumDrive {
         leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
         leftBack.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        //TODO maybe use RobotHardware class for this
         odoWheelX = hardwareMap.get(Servo.class, "odometry X");
         odoWheelY = hardwareMap.get(Servo.class, "odometry Y");
 
         odoWheelX.setDirection(Servo.Direction.FORWARD);
-        odoWheelY.setDirection(Servo.Direction.FORWARD);
+        odoWheelY.setDirection(Servo.Direction.REVERSE);
 
+        lazyImu = new LazyImu() {
+            private IMU imu;
 
-        odoWheelX.setPosition(0.64f);// - 0.01f
-        odoWheelY.setPosition(0.64f);
-
-
-        lazyImu = new LazyImu(hardwareMap, "imu", new RevHubOrientationOnRobot(
-                PARAMS.logoFacingDirection, PARAMS.usbFacingDirection));
+            @Override
+            public IMU get() {
+                if (imu == null) {
+                    imu = hardwareMap.get(IMU.class, "imu");
+                    imu.initialize(new IMU.Parameters(new RevHubOrientationOnRobot(
+                            PARAMS.logoFacingDirection, PARAMS.usbFacingDirection)));
+                }
+                return imu;
+            }
+        };
 
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
 
         localizer = new TwoDeadWheelLocalizer(hardwareMap, lazyImu.get(), PARAMS.inPerTick);
 
         FlightRecorder.write("MECANUM_PARAMS", PARAMS);
-    }
-
-    public void setDrivePowers(PoseVelocity2d powers) {
-        MecanumKinematics.WheelVelocities<Time> wheelVels = new MecanumKinematics(1).inverse(
-                PoseVelocity2dDual.constant(powers, 1));
-
-        double maxPowerMag = 1;
-        for (DualNum<Time> power : wheelVels.all()) {
-            maxPowerMag = Math.max(maxPowerMag, power.value());
-        }
-
-        leftFront.setPower(wheelVels.leftFront.get(0) / maxPowerMag);
-        leftBack.setPower(wheelVels.leftBack.get(0) / maxPowerMag);
-        rightBack.setPower(wheelVels.rightBack.get(0) / maxPowerMag);
-        rightFront.setPower(wheelVels.rightFront.get(0) / maxPowerMag);
     }
 
     public final class FollowTrajectoryAction implements Action {
@@ -316,17 +301,45 @@ public final class MecanumDrive {
 
             Pose2d error = txWorldTarget.value().minusExp(pose);
 
-            //TODO maybe delete first 2 conditions and leave the last one
-            if ((t >= timeTrajectory.duration && error.position.norm() < 2
-                    && robotVelRobot.linearVel.norm() < 0.5)
-                    || t >= timeTrajectory.duration + 1) {
 
-                leftFront.setPower(0);
-                leftBack.setPower(0);
-                rightBack.setPower(0);
-                rightFront.setPower(0);
+            switch (accuracy) {
+                case FASTEST:
+                    if (t >= timeTrajectory.duration) {
 
-                return false;
+                        frana();
+                        return false;
+                    }
+                    break;
+
+                case JUST_ANGLE:
+                    if ((t >= timeTrajectory.duration && error.heading.toDouble() < 3)
+                            || t >= timeTrajectory.duration + 1) {
+
+                        frana();
+                        return false;
+                    }
+                    break;
+
+                case ACCURATE:
+                    if ((t >= timeTrajectory.duration && error.position.norm() < 2
+                            && robotVelRobot.linearVel.norm() < 0.5 && error.heading.toDouble() < 3)
+                            || t >= timeTrajectory.duration + 1) {
+
+                        frana();
+                        return false;
+                    }
+                    break;
+
+                case VERY_ACCURATE:
+                    //TODO maybe lower the duration of 1.8
+                    //TODO maybe delete first 2 conditions and leave the last one or TURN CONDITION
+                    if ((t >= timeTrajectory.duration && error.position.norm() < 2
+                            && robotVelRobot.linearVel.norm() < 0.5 && error.heading.toDouble() < 3)
+                            || t >= timeTrajectory.duration + 1.8) {
+
+                        frana();
+                        return false;
+                    }
             }
 
             PoseVelocity2dDual<Time> command = new HolonomicController(
@@ -466,6 +479,21 @@ public final class MecanumDrive {
         }
     }
 
+    public void setDrivePowers(PoseVelocity2d powers) {
+        MecanumKinematics.WheelVelocities<Time> wheelVels = new MecanumKinematics(1).inverse(
+                PoseVelocity2dDual.constant(powers, 1));
+
+        double maxPowerMag = 1;
+        for (DualNum<Time> power : wheelVels.all()) {
+            maxPowerMag = Math.max(maxPowerMag, power.value());
+        }
+
+        leftFront.setPower(wheelVels.leftFront.get(0) / maxPowerMag);
+        leftBack.setPower(wheelVels.leftBack.get(0) / maxPowerMag);
+        rightBack.setPower(wheelVels.rightBack.get(0) / maxPowerMag);
+        rightFront.setPower(wheelVels.rightFront.get(0) / maxPowerMag);
+    }
+
     public PoseVelocity2d updatePoseEstimate() {
         Twist2dDual<Time> twist = localizer.update();
         pose = pose.plus(twist.value());
@@ -511,5 +539,24 @@ public final class MecanumDrive {
                 defaultTurnConstraints,
                 defaultVelConstraint, defaultAccelConstraint
         );
+    }
+
+    public class SetAcurracy implements Action {
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            return false;//TODO maybe true, stop immediately
+        }
+    }
+
+    public Action setAccuracy(Accuracy accuracy) {
+        this.accuracy = accuracy;
+        return new SetAcurracy();
+    }
+
+    private void frana() {
+        leftFront.setPower(0);
+        leftBack.setPower(0);
+        rightBack.setPower(0);
+        rightFront.setPower(0);
     }
 }
