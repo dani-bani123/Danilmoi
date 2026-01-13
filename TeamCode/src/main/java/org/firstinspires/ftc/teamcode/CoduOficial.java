@@ -4,7 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
-@TeleOp(name="Doamne ajuta sa mearga", group="Iterative OpMode")
+@TeleOp(name="Doamne ajuta sa mearga", group="OpMode")
 public class CoduOficial extends RobotHardware {
     private ElapsedTime runtime = new ElapsedTime();
 
@@ -28,11 +28,16 @@ public class CoduOficial extends RobotHardware {
           //  motorFd.setPower(rightPower);
             telemetry.addData("Status", "Run Time: " + runtime.toString());
            // telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
-
-            intake();
-            wheelMovement();
-            lanttake();
-            Launch();
+                if (gamepad2.back && gamepad2.start)
+                {
+                    odoWheelY.setPosition(0);
+                    odoWheelX.setPosition(0);
+                }
+            //motoareClasic();
+                intake();
+                wheelMovement();
+                lanttake();
+                Launch();
         }
     }
 }

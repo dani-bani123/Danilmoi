@@ -1,7 +1,8 @@
 package org.firstinspires.ftc.teamcode.roadrunner;
 
 import com.acmerobotics.roadrunner.Pose2d;
-import com.acmerobotics.roadrunner.PoseVelocity2d;
+import com.acmerobotics.roadrunner.Time;
+import com.acmerobotics.roadrunner.Twist2dDual;
 
 /**
  * Interface for localization methods.
@@ -19,7 +20,8 @@ public interface Localizer {
 
     /**
      * Updates the Localizer's pose estimate.
+     *
      * @return the Localizer's current velocity estimate
      */
-    PoseVelocity2d update();
+    Twist2dDual<Time> update();
 }

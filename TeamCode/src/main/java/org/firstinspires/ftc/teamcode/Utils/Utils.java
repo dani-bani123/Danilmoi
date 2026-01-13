@@ -9,7 +9,7 @@ public class Utils {
 
 
     //___________________ODO___________________
-    public static final float ODOMETRY_UP = 0;
-    public static final float ODOMETRY_DOWN = 0;
+    public static final float ODOMETRY_UP = 0.48f;
+    public static final float ODOMETRY_DOWN =0.64f;
 
 }

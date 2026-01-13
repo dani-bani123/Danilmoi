@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -14,47 +15,53 @@ public class RobotHardware extends LinearOpMode {
     public DcMotor[] wheelMotors = new DcMotor[4];
     public DcMotor[] shooterMotors = new DcMotor[2];
     public DcMotor intakeMotor;
-    public DcMotor shooterStanga, shooterDreapta;
+    public DcMotorEx shooterStanga, shooterDreapta;
     public Servo intakeServo;
     public DcMotor lantMT;
     public Servo bila;
-    double shooterPower = 0;//casi e gay
     boolean toggleB = false;
     boolean toggleY = false;
     boolean toggleX = false;
     boolean prev_pressedX = false;
     boolean prev_pressedY = false;
     boolean prev_pressedB = false;
-    Servo odoWheelY, odoWheelX;
+    public Servo odoWheelY, odoWheelX;
 
-    void init_hardware(HardwareMap ahwMap) {
+    public void init_hardware(HardwareMap ahwMap) {
         motorFs = ahwMap.get(DcMotor.class, "motor Fs");
         motorSs = ahwMap.get(DcMotor.class, "motor Ss");
         motorSd = ahwMap.get(DcMotor.class, "motor Sd");
         motorFd = ahwMap.get(DcMotor.class, "motor Fd");
         intakeMotor = ahwMap.get(DcMotor.class, "motor intake");
-        shooterStanga = ahwMap.get(DcMotor.class, "shooter stanga");
-        shooterDreapta = ahwMap.get(DcMotor.class, "shooter dreapta");
+        shooterStanga = ahwMap.get(DcMotorEx.class, "shooter stanga");
+        shooterDreapta = ahwMap.get(DcMotorEx.class, "shooter dreapta");
         intakeServo = ahwMap.get(Servo.class, "servo intake");
         lantMT = ahwMap.get(DcMotor.class,"lant mt");
         bila = ahwMap.get(Servo.class,"bila");
 
+
         odoWheelX = ahwMap.get(Servo.class, "odometry X");
         odoWheelY = ahwMap.get(Servo.class, "odometry Y");
 
+        odoWheelX.setDirection(Servo.Direction.FORWARD);
+        odoWheelY.setDirection(Servo.Direction.FORWARD);
+
         setOdoPositions(Utils.ODOMETRY_UP);
 
-        odoWheelX.setDirection(Servo.Direction.FORWARD);
-        odoWheelY.setDirection(Servo.Direction.REVERSE);
+
+        bila.setDirection(Servo.Direction.REVERSE);
+
 
 
         motorFs.setDirection(DcMotor.Direction.REVERSE);
         motorFd.setDirection(DcMotor.Direction.REVERSE);
         motorSs.setDirection(DcMotor.Direction.FORWARD);
         motorSd.setDirection(DcMotor.Direction.REVERSE);
-        /// --------------launch----------------------------
-        shooterStanga.setDirection(DcMotorSimple.Direction.FORWARD);
-        shooterDreapta.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        // -----------------launch-------------------------
+
+        shooterStanga.setDirection(DcMotorSimple.Direction.REVERSE);
+        shooterDreapta.setDirection(DcMotorSimple.Direction.FORWARD);
         shooterStanga.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         shooterDreapta.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
@@ -71,7 +78,7 @@ public class RobotHardware extends LinearOpMode {
             motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         for (DcMotor motor : shooterMotors)
-            motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
     }
 
@@ -84,12 +91,12 @@ public class RobotHardware extends LinearOpMode {
         odoWheelY.setPosition(position + 0.01f);
     }
 
-    //----------------INTAKEEEEE------------
+    //----------------INTAKEEEEE---------------
 
     public void intake() {
 
 
-        if (!prev_pressedX && gamepad2.x) {
+        if (!prev_pressedX && gamepad1.x) {
             toggleX = !toggleX;
         }
 
@@ -104,64 +111,82 @@ public class RobotHardware extends LinearOpMode {
             intakeServo.setPosition(0.5);
         }
 
-        prev_pressedX = gamepad2.x;
+        prev_pressedX = gamepad1.x;
 
-        if (gamepad2.a){
-            bila.setPosition(0);
+        if (gamepad1.a){
+            bila.setPosition(0f);
         }
+
         else {
-            bila.setPosition(0.5);
+            bila.setPosition(0.5f);
         }
+
+        if (gamepad1.left_bumper){
+            bila.setPosition(1f);
+        }
+        else{
+            bila.setPosition(0.5f);
+        }
+
     }
 
-    //---------------------Launch-------------------------------
-    public void Launch()
-    {
-        if (gamepad2.dpad_up) //creste puterea
-            shooterPower = 1;
+    //---------------------Launch------ -------------------------
+    public void Launch() {
 
-        if (gamepad2.dpad_down) //scade puterea
-            shooterPower = -1;
+        if (gamepad1.dpad_up) { //creste puterea
+            shooterStanga.setPower(1);
+            shooterDreapta.setPower(1);
+        }
 
-        if (gamepad2.dpad_left)
-            shooterPower = 0.5;
+        if (gamepad1.dpad_down) { //scade puterea
+            shooterStanga.setPower(0.8);
+            shooterDreapta.setPower(0.8);
+        }
 
-        if (gamepad2.dpad_right)
-            shooterPower = 0.25;
+        if (gamepad1.dpad_left) {
+            shooterStanga.setPower(0.5);
+            shooterDreapta.setPower(0.5);
+        }
 
-        if (!prev_pressedY && gamepad2.y) {
+        if (gamepad1.dpad_right) {
+            shooterStanga.setPower(0.3);
+            shooterDreapta.setPower(0.3);
+        }
+
+        if (!prev_pressedY && gamepad1.y) {
             toggleY = !toggleY;
         }
 
         if (toggleY) {
-            shooterStanga.setPower(1);
-            shooterDreapta.setPower(1);
+            shooterStanga.setPower(0.7);
+            shooterDreapta.setPower(0.7);
         } else {
             shooterStanga.setPower(0);
             shooterDreapta.setPower(0);
         }
 
-        prev_pressedY = gamepad2.y;
+        prev_pressedY = gamepad1.y;
     }
-
     //------------LANT-------------
     public void lanttake(){
 
-        if (!prev_pressedB && gamepad2.b) {
+        if (!prev_pressedB && gamepad1.b) {
             toggleB = !toggleB;
         }
 
         if (toggleB) {
-            lantMT.setPower(1);
+            lantMT.setPower(-1);
         } else {
             lantMT.setPower(0);
         }
 
-        prev_pressedB = gamepad2.b;
+        prev_pressedB = gamepad1.b;
     }
 
     //----------------WHEELS----------------
+
     public void wheelMovement() {
+
         if (gamepad1.a) {
             frana();
             return;
@@ -174,14 +199,20 @@ public class RobotHardware extends LinearOpMode {
 
         float fd, fs, sd, ss;
         fs = y + x - t;
-        fd = y - x + t;
+        fd = y + x + t;
         ss = y - x - t;
-        sd = y + x + t;
+        sd = y - x + t;
 
         motorFs.setPower(fs);
         motorFd.setPower(fd);
         motorSs.setPower(ss);
         motorSd.setPower(sd);
+    }
+
+    //--------------------AUTO------------------
+
+    public void initAuto(){
+        setOdoPositions(Utils.ODOMETRY_DOWN);
     }
 
     @Override//trb ca sa nu dea eroare
