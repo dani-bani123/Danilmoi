@@ -15,8 +15,8 @@ public class RobotHardware extends LinearOpMode {
     public DcMotor[] wheelMotors = new DcMotor[4];
     public DcMotor[] shooterMotors = new DcMotor[2];
     public DcMotor intakeMotor;
-    public DcMotorEx shooterStanga, shooterDreapta;
-    public Servo intakeServo;
+    public DcMotor shooterStanga, shooterDreapta;
+   // public Servo intakeServo;
     public DcMotor lantMT;
     public Servo bila;
     boolean toggleB = false;
@@ -33,9 +33,9 @@ public class RobotHardware extends LinearOpMode {
         motorSd = ahwMap.get(DcMotor.class, "motor Sd");
         motorFd = ahwMap.get(DcMotor.class, "motor Fd");
         intakeMotor = ahwMap.get(DcMotor.class, "motor intake");
-        shooterStanga = ahwMap.get(DcMotorEx.class, "shooter stanga");
-        shooterDreapta = ahwMap.get(DcMotorEx.class, "shooter dreapta");
-        intakeServo = ahwMap.get(Servo.class, "servo intake");
+        shooterStanga = ahwMap.get(DcMotor.class, "shooter stanga");
+        shooterDreapta = ahwMap.get(DcMotor.class, "shooter dreapta");
+       // intakeServo = ahwMap.get(Servo.class, "servo intake");
         lantMT = ahwMap.get(DcMotor.class,"lant mt");
         bila = ahwMap.get(Servo.class,"bila");
 
@@ -62,8 +62,6 @@ public class RobotHardware extends LinearOpMode {
 
         shooterStanga.setDirection(DcMotorSimple.Direction.REVERSE);
         shooterDreapta.setDirection(DcMotorSimple.Direction.FORWARD);
-        shooterStanga.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        shooterDreapta.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
         wheelMotors = new DcMotor[]{motorFs, motorFd, motorSs, motorSd};
         shooterMotors = new DcMotor[]{shooterDreapta , shooterStanga};
@@ -103,17 +101,17 @@ public class RobotHardware extends LinearOpMode {
         if (toggleX) {
 
             intakeMotor.setPower(-1);
-            intakeServo.setPosition(0);
+          //  intakeServo.setPosition(0);
 
         } else {
 
             intakeMotor.setPower(0);
-            intakeServo.setPosition(0.5);
+           // intakeServo.setPosition(0.5);
         }
 
         prev_pressedX = gamepad1.x;
 
-        if (gamepad1.a){
+        if (gamepad1.right_bumper){
             bila.setPosition(0f);
         }
 
@@ -158,8 +156,8 @@ public class RobotHardware extends LinearOpMode {
         }
 
         if (toggleY) {
-            shooterStanga.setPower(0.7);
-            shooterDreapta.setPower(0.7);
+            shooterStanga.setPower(0.8);
+            shooterDreapta.setPower(0.8);
         } else {
             shooterStanga.setPower(0);
             shooterDreapta.setPower(0);

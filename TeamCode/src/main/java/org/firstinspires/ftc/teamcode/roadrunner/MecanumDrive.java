@@ -240,7 +240,10 @@ public final class MecanumDrive {
         odoWheelY = hardwareMap.get(Servo.class, "odometry Y");
 
         odoWheelX.setDirection(Servo.Direction.FORWARD);
-        odoWheelY.setDirection(Servo.Direction.REVERSE);
+        odoWheelY.setDirection(Servo.Direction.FORWARD);
+
+        odoWheelX.setPosition(0.64f);// - 0.01f
+        odoWheelY.setPosition(0.64f);
 
         lazyImu = new LazyImu() {
             private IMU imu;

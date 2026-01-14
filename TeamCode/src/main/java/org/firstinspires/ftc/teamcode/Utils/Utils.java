@@ -8,8 +8,8 @@ import com.acmerobotics.roadrunner.Pose2d;
 public class Utils {
 
     public static class AUTO{
-        public static final Pose2d POSE_JOS = new Pose2d(-40, -62, Math.PI);
-        public static final Pose2d POSE_SUS = new Pose2d(8, -62, Math.PI);
+        public static final Pose2d POSE_JOS = new Pose2d(0, 0, Math.PI);
+        public static final Pose2d POSE_SUS = new Pose2d(0, 0, Math.PI);
     }
     //___________________ODO___________________
     public static final float ODOMETRY_UP = 0.48f;
