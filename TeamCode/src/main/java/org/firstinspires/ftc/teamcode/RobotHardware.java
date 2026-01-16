@@ -94,7 +94,7 @@ public class RobotHardware extends LinearOpMode {
     public void intake() {
 
 
-        if (!prev_pressedX && gamepad1.x) {
+        if (!prev_pressedX && gamepad2.x) {
             toggleX = !toggleX;
         }
 
@@ -109,9 +109,9 @@ public class RobotHardware extends LinearOpMode {
            // intakeServo.setPosition(0.5);
         }
 
-        prev_pressedX = gamepad1.x;
+        prev_pressedX = gamepad2.x;
 
-        if (gamepad1.right_bumper){
+        if (gamepad2.right_bumper){
             bila.setPosition(0f);
         }
 
@@ -119,7 +119,7 @@ public class RobotHardware extends LinearOpMode {
             bila.setPosition(0.5f);
         }
 
-        if (gamepad1.left_bumper){
+        if (gamepad2.left_bumper){
             bila.setPosition(1f);
         }
         else{
@@ -131,27 +131,18 @@ public class RobotHardware extends LinearOpMode {
     //---------------------Launch------ -------------------------
     public void Launch() {
 
-        if (gamepad1.dpad_up) { //creste puterea
+        if (gamepad2.dpad_up) { //creste puterea
             shooterStanga.setPower(1);
             shooterDreapta.setPower(1);
         }
 
-        if (gamepad1.dpad_down) { //scade puterea
+        if (gamepad2.dpad_down) { //scade puterea
             shooterStanga.setPower(0.8);
             shooterDreapta.setPower(0.8);
         }
 
-        if (gamepad1.dpad_left) {
-            shooterStanga.setPower(0.5);
-            shooterDreapta.setPower(0.5);
-        }
 
-        if (gamepad1.dpad_right) {
-            shooterStanga.setPower(0.3);
-            shooterDreapta.setPower(0.3);
-        }
-
-        if (!prev_pressedY && gamepad1.y) {
+        if (!prev_pressedY && gamepad2.y) {
             toggleY = !toggleY;
         }
 
@@ -163,12 +154,12 @@ public class RobotHardware extends LinearOpMode {
             shooterDreapta.setPower(0);
         }
 
-        prev_pressedY = gamepad1.y;
+        prev_pressedY = gamepad2.y;
     }
     //------------LANT-------------
     public void lanttake(){
 
-        if (!prev_pressedB && gamepad1.b) {
+        if (!prev_pressedB && gamepad2.b) {
             toggleB = !toggleB;
         }
 
@@ -178,7 +169,7 @@ public class RobotHardware extends LinearOpMode {
             lantMT.setPower(0);
         }
 
-        prev_pressedB = gamepad1.b;
+        prev_pressedB = gamepad2.b;
     }
 
     //----------------WHEELS----------------
@@ -205,6 +196,22 @@ public class RobotHardware extends LinearOpMode {
         motorFd.setPower(fd);
         motorSs.setPower(ss);
         motorSd.setPower(sd);
+
+        if(gamepad1.dpad_left) {
+            motorFs.setPower(-1);
+            motorFd.setPower(1);
+            motorSs.setPower(1);
+            motorSd.setPower(-1);
+        }
+            if(gamepad1.dpad_right){
+                motorFs.setPower(1);
+                motorFd.setPower(-1);
+                motorSs.setPower(-1);
+                motorSd.setPower(1);
+            }
+
+
+
     }
 
     //--------------------AUTO------------------
